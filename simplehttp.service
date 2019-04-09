@@ -1,0 +1,13 @@
+[Unit]
+Description=simple http
+
+[Service]
+User=root
+Group=root
+Type=simple
+WorkingDirectory=/root/webroot2/HttpServer_Py/
+ExecStart=/root/webroot2/HttpServer_Py/httpserver.py
+
+[Install]
+WantedBy=multi-user.target
+
