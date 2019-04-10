@@ -53,15 +53,7 @@ def process_body(path):
     return contype, body
 
 
-serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind((ip, port))
-serversocket.listen(10)
-
-print('Running...')
-
-while True:
-    clientsocket, addr = serversocket.accept()
-
+def process_accept(clientsocket):
     # recv
     msg = clientsocket.recv(1024)
     req = msg.decode('utf-8')
@@ -69,7 +61,7 @@ while True:
     # req path
     strList = str.split(req, ' ', 2)
     if(len(strList) < 3):
-        continue
+        return
     path = strList[1]
     print('__req: '+path)
 
@@ -89,3 +81,26 @@ while True:
         print('not found')
 
     clientsocket.close()
+
+
+serversocket = None
+clientsocket = None
+
+serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serversocket.bind((ip, port))
+serversocket.listen(10)
+
+print('Running...')
+
+try:
+    while True:
+        clientsocket, addr = serversocket.accept()
+        process_accept(clientsocket)
+except KeyboardInterrupt as identifier:
+    pass
+finally:
+    serversocket.close()
+    if(clientsocket != None):
+        clientsocket.shutdown(2)
+        clientsocket.close()
+    print("server closed")
