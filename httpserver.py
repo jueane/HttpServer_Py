@@ -62,6 +62,7 @@ def process_accept(clientsocket):
     strList = str.split(req, ' ', 2)
     if(len(strList) < 3):
         return
+
     path = strList[1]
     print('__req: '+path)
 
@@ -80,11 +81,6 @@ def process_accept(clientsocket):
         # resp 404
         print('not found')
 
-    clientsocket.close()
-
-
-serversocket = None
-clientsocket = None
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.bind((ip, port))
@@ -92,15 +88,21 @@ serversocket.listen(10)
 
 print('Running...')
 
-try:
-    while True:
+while True:
+    clientsocket = None
+    try:
         clientsocket, addr = serversocket.accept()
         process_accept(clientsocket)
-except KeyboardInterrupt as identifier:
-    pass
-finally:
-    serversocket.close()
-    if(clientsocket != None):
-        clientsocket.shutdown(2)
-        clientsocket.close()
-    print("server closed")
+    except KeyboardInterrupt as ex1:
+        print(ex1)
+        continue
+    except BrokenPipeError as ex2:
+        print(ex2)
+        continue
+    finally:
+        if(clientsocket != None):
+            clientsocket.shutdown(2)
+            clientsocket.close()
+
+serversocket.close()
+print("server closed")
