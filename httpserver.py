@@ -7,8 +7,9 @@ from requests import get
 
 RESP_OK = 'HTTP/1.1 200 OK\n'
 CONN_CLOSED = 'Connection: Closed\n'
-ip = '0.0.0.0'
-port = 8888
+
+cachedPages = {}
+cachedTypes = {}
 
 
 def readfile(filename):
@@ -33,9 +34,19 @@ def readBinaryfile(filename):
 
 
 def process_body(path):
+    if(path == '/'):
+        path = '/index.html'
+
     contype = ''
     body = ''
 
+    # try get from cache
+    if(path in cachedPages):
+        body = cachedPages[path]
+        contype = cachedTypes[path]
+        return contype, body
+
+    # read from file
     if(str.endswith(path, 'favicon.ico')):
         contype = 'Content-Type: image/x-icon\n'
         body = readBinaryfile(path)
@@ -46,10 +57,15 @@ def process_body(path):
         contype = 'Content-Type: text/css\n'
         body = readfile(path)
     else:
-        if(path == '/'):
-            path = '/index.html'
         contype = 'Content-Type: text/html\n'
         body = readfile(path)
+
+    if(body == None):
+        return None, None
+
+    # cache
+    cachedPages[path] = body
+    cachedTypes[path] = contype
     return contype, body
 
 
@@ -83,7 +99,7 @@ def process_accept(clientsocket):
 
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind((ip, port))
+serversocket.bind(('0.0.0.0', 8888))
 serversocket.listen(10)
 
 print('Running...')
