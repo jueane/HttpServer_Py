@@ -120,6 +120,11 @@ def process_accept(clientsocket):
         clientsocket.send(head)
         clientsocket.send(body.encode("ascii"))
 
+def signal_handler(signum,frame):    
+    print("\nExit from keyboard")
+    sys.exit(1)
+
+signal.signal(signal.SIGINT,signal_handler)
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.bind(('0.0.0.0', 8888))
