@@ -8,6 +8,8 @@ from requests import get
 RESP_OK = 'HTTP/1.1 200 OK\n'
 CONN_CLOSED = 'Connection: Closed\n'
 
+RESP_NOT_FOUND = "HTTP/1.1 404 Not Found\n"
+
 cachedPages = {}
 cachedTypes = {}
 
@@ -59,9 +61,18 @@ def process_body(path):
     elif(str.endswith(path, '.css')):
         contype = 'Content-Type: text/css\n'
         body = readfile(path)
-    else:
+    elif(str.endswith(path, '.txt')):
+        contype = 'Content-Type: text/plain\n'
+        body = readfile(path)
+    elif(str.endswith(path, '.html')):
         contype = 'Content-Type: text/html\n'
         body = readfile(path)
+    elif(str.endswith(path, '.htm')):
+        contype = 'Content-Type: text/html\n'
+        body = readfile(path)
+    else:
+        contype = 'Content-Type: application/octet-stream\n'
+        body = readBinaryfile(path)
 
     if(body == None):
         return None, None
@@ -99,6 +110,15 @@ def process_accept(clientsocket):
     else:
         # resp 404
         print('not found')
+        contype = 'Content-Type: text/plain\n'
+        body = "Not Found"
+        head = RESP_NOT_FOUND
+        head += CONN_CLOSED
+        head += contype
+        head += 'Content-Length: '+str(len(body))+'\n\n'
+        head = head.encode('utf-8')
+        clientsocket.send(head)
+        clientsocket.send(body.encode("ascii"))
 
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -118,10 +138,18 @@ while True:
     except BrokenPipeError as ex2:
         print(ex2)
         continue
+    except Exception as ex:
+        print(ex)
+        continue
     finally:
         if(clientsocket != None):
-            clientsocket.shutdown(2)
-            clientsocket.close()
+            try:
+                clientsocket.shutdown(2)
+                clientsocket.close()
+            except Exception as ex99:
+                print(ex99)
+                pass
+
 
 serversocket.close()
 print("server closed")
