@@ -20,7 +20,10 @@ def readfile(filename):
         ret = ret.encode("utf-8")
         return ret
     except FileNotFoundError:
-        return None
+        pass
+    except UnicodeDecodeError:
+        pass
+    return None
 
 
 def readBinaryfile(filename):
