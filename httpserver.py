@@ -150,6 +150,10 @@ while True:
         if(clientsocket != None):
             try:
                 clientsocket.shutdown(2)
+            except Exception as ex99:
+                print(ex99)
+                pass
+            try:
                 clientsocket.close()
             except Exception as ex99:
                 print(ex99)
